@@ -3,8 +3,8 @@ const server = dgram.createSocket('udp4');
 
 server.on('message', (msg, rinfo) => {
     try {
-      const json = JSON.parse(msg.toString());
-      const mapped = {};
+      const json = JSON.parse(msg.toString()); 
+      const mapped = {}; /* creo un oggetto mapped dove salvare i valori del JSON parsati */
       Object.entries(json).forEach(([key, value]) => {
         mapped[key] = value;
         console.log(`server got ${key}: ${value} from ${rinfo.address}:${rinfo.port}`);
