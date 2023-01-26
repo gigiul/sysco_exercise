@@ -30,7 +30,7 @@ let UdpService = class UdpService {
                 console.log("The received message is not a valid JSON");
             }
         });
-        this.server.bind(8081);
+        this.server.bind(5000);
     }
 };
 UdpService = __decorate([
