@@ -7,18 +7,6 @@ const wss = new WebSocketServer({ port: 8000 });
 wss.on('connection', function connection(ws) {
   ws.on('error', console.error);
 
-  ws.on('message', function message(data) {
-    console.log('received: %s', data);
-    server.send(data, 0, data.length, 8081, 'localhost', (err) => {
-      if (err) {
-        console.log(`Error: ${err}`);
-      } else {
-        console.log(`Data sent: ${data}`);
-      }
-    });
-  });
-
-  ws.send('something');
 });
 
 server.on('message', (msg, rinfo) => {
@@ -30,6 +18,9 @@ server.on('message', (msg, rinfo) => {
         console.log(`server udp got ${key}: ${value} from ${rinfo.address}:${rinfo.port}`);
       });
         console.log(mapped);
+        wss.clients.forEach(function each(client) {
+          client.send(JSON.stringify(mapped))
+        });
     } catch (e) {
       console.log("The received message is not a valid JSON");
     }
