@@ -1,36 +1,43 @@
-import { useEffect, useState } from "react";
-import * as io from 'socket.io-client'
-import MessageInput from "./MessageInput";
-import Messages from "./Messages";
+
+import { useEffect, useState } from 'react';
+import useWebSocket from 'react-use-websocket';
+import MessageInput from './MessageInput';
+
 
 function App() {
 
-  const [socket, setSocket] = useState();
-  const[messages, setMessages] = useState([]);
-  const send = (value) => {
-    socket?.emit("message", value);
-  }
-  useEffect(() => {
-    const newSocket=io.connect("http://localhost:8000");
-    setSocket(newSocket);
-  }, [setSocket])
+
+  const socketUrl = 'ws://localhost:8000';
   
-  const messageListener = (message) => {
-    setMessages([...messages, message]);
-  }
+  const {
+    sendMessage,
+    onmessage,
+    lastMessage,
+    readyState,
+    getWebSocket,
+  } = useWebSocket(socketUrl, {
+    onOpen: () => console.log('opened'),
+    //Will attempt to reconnect on all close events, such as server shutting down
+    shouldReconnect: (closeEvent) => true,
+  });
+
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
-    socket?.on("message", messageListener);
-    return () => {
-      socket?.off("message", messageListener);
-    }
-  }, [messageListener]);
+      const ws = new WebSocket(socketUrl);
+      ws.onmessage = (event) => {
+          const data = (event.data);
+          setMessage(data);
+      };
+      return () => {
+          ws.close();
+      }
+  }, [])
 
   return (
     <>
-      {" "}
-      <MessageInput send={send} />
-      <Messages messages={messages} />
+      <MessageInput send={sendMessage}/>
+      <p>{message}</p>
     </>
   );
 }
