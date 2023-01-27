@@ -1,8 +1,6 @@
 
 import { useEffect, useState } from 'react';
 import useWebSocket from 'react-use-websocket';
-import MessageInput from './MessageInput';
-
 
 function App() {
 
@@ -44,7 +42,7 @@ function App() {
     console.log(array);
   }, [JSON.stringify(array)])
 
-  const lastObject = array[array.length-1];
+  const lastObject = array[array.length-1];  //mi salvo l'ultimo oggetto ricevuto altrimenti mi renderizza l'intero array
 
   return(
     <div className='flex flex-col items-center justify-center h-screen'>
