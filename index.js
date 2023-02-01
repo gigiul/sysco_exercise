@@ -40,7 +40,8 @@ server.on('message', function (msg, info) {
         console.log("Sending to clients: " + JSON.stringify(obj))
       client.send(JSON.stringify(obj))
   })
-  } catch (e) {
+  }
+  catch (e) {
     wss.clients.forEach(function each(client) {
       client.send("Invalid JSON: " + e)
     })
