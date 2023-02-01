@@ -8,6 +8,8 @@ function App() {
 
   const socketUrl = 'ws://localhost:8080';
 
+  const DEBUG = false;
+
   const { /* definire i metodi da usare */} = useWebSocket(socketUrl, {
     onOpen: () => console.log('Connected to the websocket: ' + socketUrl),
     onClose: () => console.log('Impossible to connect to: ' + socketUrl),
@@ -17,9 +19,11 @@ function App() {
   const [array, setArray] = useState([]); // array per contenere i dati ricevuti
   
   useEffect(() => {
-    console.log(array); /*stampo l'array così lo inizializzo e non ho
-                         il problema di perdere i dati la prima volta
-                          che vengono inviati al client */
+    if (DEBUG)
+      console.log("array: " + array);
+ /*stampo l'array così lo inizializzo e non ho
+   il problema di perdere i dati la prima volta
+   che vengono inviati al client */
   }, [JSON.stringify(array)]);
 
   useEffect (() => {
@@ -56,7 +60,7 @@ function App() {
         {
           array.map((item, index) => {
             return (
-              <tr key={item.IDR}>
+              <tr key={index}>
                 <td>{index + 1}</td>
                 <td>{item.IDR}</td>
                 <td>{item.event_start}</td>
@@ -66,7 +70,6 @@ function App() {
                 <td>{item.mag_max}</td>
                 <td>{item.dist_min}</td>
                 <td>{item.dist_max}</td>
-                {console.log("item dist " + item.dist_max)}
               </tr>
             )
           })

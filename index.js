@@ -1,5 +1,9 @@
 
 const { WebSocketServer } = require('ws');
+var udp = require('dgram');
+var server = udp.createSocket('udp4');
+
+const DEBUG = false;
 
 var wsOptions = {
   port: 8080
@@ -18,30 +22,30 @@ wss.on('connection', function connection(ws) {
 
 });
 
-var udp = require('dgram');
-
-var server = udp.createSocket('udp4');
-
-//================ When receiving data from client 
+//Server UDP
 server.on('message', function (msg, info) {
   try {
-  let msgString = msg.toString();
-  console.log('Data received from server UDP : ' + msg.toString());
-  let msgJson = JSON.parse(msgString);
-  console.log('Parsed JSON in UDP server: ' + msgJson);
-  let obj = {};
-  Object.entries(msgJson).forEach(([key, value]) => {
-    obj[key] = value;
-  });
-  wss.clients.forEach(function each(client) {
-    console.log("Sending to clients: " + JSON.stringify(obj))
-    client.send(JSON.stringify(obj))
+    let msgString = msg.toString();
+    if (DEBUG)
+      console.log('Data received from server UDP : ' + msg.toString());
+    let msgJson = JSON.parse(msgString);
+    if (DEBUG)
+      console.log('Parsed JSON in UDP server: ' + msgJson);
+    let obj = {};
+    Object.entries(msgJson).forEach(([key, value]) => {
+      obj[key] = value;
+    });
+    wss.clients.forEach(function each(client) {
+      if (DEBUG)
+        console.log("Sending to clients: " + JSON.stringify(obj))
+      client.send(JSON.stringify(obj))
   })
   } catch (e) {
     wss.clients.forEach(function each(client) {
       client.send("Invalid JSON: " + e)
     })
-    console.log("Invalid JSON: " + e);
+    if (DEBUG)
+      console.log("Invalid JSON: " + e);
   }
 });
 //================ if an error occurs
