@@ -14,52 +14,66 @@ const wss = new WebSocketServer({ port: wsOptions.port });
 console.log("WS Opened on port " + wsOptions.port)
 
 wss.on('connection', function connection(ws) {
-  ws.on('error', function () {
-    console.error});
-/*   ws.on('message', function message(data) {
-    console.log('received: %s', data);
-  }); */
-
+  ws.on('error', console.error);
 });
 
 //Server UDP
-server.on('message', function (msg, info) {
-  try {
-    let msgString = msg.toString();
-    if (DEBUG)
-      console.log('Data received from server UDP : ' + msg.toString());
-    let msgJson = JSON.parse(msgString);
-    if (DEBUG)
-      console.log('Parsed JSON in UDP server: ' + msgJson);
-    let obj = {};
-    Object.entries(msgJson).forEach(([key, value]) => {
-      obj[key] = value;
-    });
-    wss.clients.forEach(function each(client) {
-      if (DEBUG)
-        console.log("Sending to clients: " + JSON.stringify(obj))
-      client.send(JSON.stringify(obj))
-  })
-  }
-  catch (e) {
-    wss.clients.forEach(function each(client) {
-      client.send("Invalid JSON: " + e)
-    })
-    if (DEBUG)
-      console.log("Invalid JSON: " + e);
-  }
-});
-//================ if an error occurs
-server.on('error', function (error) {
-  console.log('Error: ' + error);
+
+server.on('error', (err) => {
+  console.error(`server error:\n${err.stack}`);
   server.close();
 });
 
-//open function
-server.on('listening', function () {
-  var address = server.address();
-  var port = address.port;
-  console.log('Server UPD is listening at port ' + port);
+server.on('message', (msg, rinfo) => {
+  var msgString = msg.toString();
+  if (DEBUG) {
+    console.log(`server got: ${msgString} from ${rinfo.address}:${rinfo.port}`);
+  }
+  if (isNaN(msgString)) {
+    try {
+      let msgParsed = JSON.parse(msgString);
+      if (DEBUG) {
+        console.log("JsonParse", msgParsed)
+      }
+      let obj = {
+        "type": "data",
+        "payload": msgParsed
+      }
+      wss.clients.forEach(function each(client) {
+          client.send(JSON.stringify(obj));
+        }
+      )      
+      }
+    catch (e) {
+      wss.clients.forEach(function each(client) {
+        let obj_err = {
+          "type": "json_error",
+          "payload": "Parsed Failed"
+        }
+        client.send(JSON.stringify(obj_err))
+      })
+      if (DEBUG) {
+        console.log("Parsed Failed")
+      }
+    }
+  }
+  else {
+    wss.clients.forEach(function each(client) {
+      let obj_err = {
+        "type": "json_error",
+        "payload": "Parsed Failed"
+      }
+      client.send(JSON.stringify(obj_err))
+    })
+    if (DEBUG) {
+      console.log("Parsed Failed")
+    }
+  }
+});
+
+server.on('listening', () => {
+  const address = server.address();
+  console.log(`server listening ${address.address}:${address.port}`);
 });
 
 server.bind(8081);
