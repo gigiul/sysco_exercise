@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react';
 import Table from 'react-bootstrap/Table';
 import { ReactNotifications, Store } from 'react-notifications-component'
 import 'react-notifications-component/dist/theme.css'
-
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
-  
+
   const DEBUG = true;
-  
+
   const socketUrl = 'ws://localhost:8080';
 
-  const { lastMessage } = useWebSocket(socketUrl, {
+  const { } = useWebSocket(socketUrl, {
     onOpen: () => console.log('Connected to the websocket: ' + socketUrl),
     onClose: () => console.log('Impossible to connect to: ' + socketUrl),
     shouldReconnect: (closeEvent) => true,
@@ -21,7 +21,7 @@ function App() {
   const [array, setArray] = useState([]); // array per contenere i dati ricevuti
 
   const ws = new WebSocket(socketUrl);
-  
+
   useEffect(() => {
     ws.onmessage = (event) => {
       let msg = event.data;
@@ -29,17 +29,17 @@ function App() {
         console.log("MSG RECEIVED", msg)
       }
       setArray(array => [...array, msg]);
-      };
-      }, [])
-  
-      
-  function parseArray (item, index) {
+    };
+  }, [])
+
+
+  function parseArray(item, index) {
     let parsed = JSON.parse(item)
     if (DEBUG) {
       console.log("item: ", parsed.type)
     }
 
-     switch(parsed.type) {
+    switch (parsed.type) {
       case "data":
         return (<>
           <td>{index + 1}</td>
@@ -57,14 +57,14 @@ function App() {
         if (DEBUG) {
           console.log("invalid item")
         }
-        {handleNotification(parsed.payload)}
-      break;
+        handleNotification(parsed.payload)
+        break;
       default:
         console.log("Default")
     }
   }
 
-  function handleNotification (payload) {
+  function handleNotification(payload) {
     Store.addNotification({
       title: "Invalid String!",
       message: payload,
@@ -83,32 +83,37 @@ function App() {
 
   return (
     <>
-    <ReactNotifications />
-    <Table striped border={3}>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>IDR</th>
-          <th>event_start</th>
-          <th>event_stop</th>
-          <th>mag_avg</th>
-          <th>mag_min</th>
-          <th>mag_max</th>
-          <th>dist_min</th>
-          <th>dist_max</th>
-        </tr>
-      </thead>
-      <tbody>
-          {array.map((item, index) => {
-            return (
-              <tr key={index}>
-                {parseArray(item, index)}
-              </tr>
-            )
-          })
-        }
-      </tbody>
-    </Table>
+      <ReactNotifications />
+      <div className='d-flex flex-column text-center justify-content-center align-items-center'>
+        <h1 className='my-3'>Data Table</h1>
+        <p>Please send data to UDP server</p>
+        <Table striped border={3}
+                className='w-75'>
+          <thead>
+            <tr className=''>
+              <th>#</th>
+              <th>IDR</th>
+              <th>event_start</th>
+              <th>event_stop</th>
+              <th>mag_avg</th>
+              <th>mag_min</th>
+              <th>mag_max</th>
+              <th>dist_min</th>
+              <th>dist_max</th>
+            </tr>
+          </thead>
+          <tbody>
+            {array.map((item, index) => {
+              return (
+                <tr key={index}>
+                  {parseArray(item, index)}
+                </tr>
+              )
+            })
+            }
+          </tbody>
+        </Table>
+      </div>
     </>
   );
 
