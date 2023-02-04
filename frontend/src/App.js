@@ -2,11 +2,13 @@ import './App.css';
 import useWebSocket from 'react-use-websocket';
 import { useEffect, useState } from 'react';
 import Table from 'react-bootstrap/Table';
+import { ReactNotifications, Store } from 'react-notifications-component'
+import 'react-notifications-component/dist/theme.css'
 
 
 function App() {
   
-  const DEBUG = false;
+  const DEBUG = true;
   
   const socketUrl = 'ws://localhost:8080';
 
@@ -40,7 +42,6 @@ function App() {
      switch(parsed.type) {
       case "data":
         return (<>
-        <tr key={index}>
           <td>{index + 1}</td>
           <td>{parsed.payload.IDR}</td>
           <td>{parsed.payload.event_start}</td>
@@ -50,20 +51,39 @@ function App() {
           <td>{parsed.payload.mag_max}</td>
           <td>{parsed.payload.dist_min}</td>
           <td>{parsed.payload.dist_max}</td>
-        </tr>
         </>)
       case "json_error":
+        array.splice(index, 1);
         if (DEBUG) {
           console.log("invalid item")
         }
+        {handleNotification(parsed.payload)}
       break;
       default:
         console.log("Default")
     }
   }
 
+  function handleNotification (payload) {
+    Store.addNotification({
+      title: "Invalid String!",
+      message: payload,
+      type: "danger",
+      insert: "top",
+      container: "top-right",
+      animationIn: ["animate__animated", "animate__fadeIn"],
+      animationOut: ["animate__animated", "animate__fadeOut"],
+      dismiss: {
+        duration: 3000,
+        onScreen: true
+      }
+    });
+  }
+
+
   return (
     <>
+    <ReactNotifications />
     <Table striped border={3}>
       <thead>
         <tr>
@@ -81,7 +101,9 @@ function App() {
       <tbody>
           {array.map((item, index) => {
             return (
-              parseArray(item, index)
+              <tr key={index}>
+                {parseArray(item, index)}
+              </tr>
             )
           })
         }
